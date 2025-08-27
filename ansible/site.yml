@@ -4,7 +4,8 @@
   gather_facts: false
 
   vars:
-    site_dir: "./site"   # hard-coded to guarantee the folder exists
+    # Use SITE_DIR from env when provided; default to ./site for ad-hoc runs
+    site_dir: "{{ lookup('env','SITE_DIR') | default('./site', true) }}"
 
   tasks:
     - name: Ensure site directory exists

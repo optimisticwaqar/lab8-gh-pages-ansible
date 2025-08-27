@@ -32,16 +32,21 @@ jobs:
           inventory: ansible/inventory.ini
           options: |
             -vv
+        env:
+          # Absolute path ensures the site is created at repo root
+          SITE_DIR: ${{ github.workspace }}/site
 
-      # Sanity check so we fail fast with a clear message if ./site isn't there
-      - name: "Debug: list site directory"
+      # Sanity checks so we can see where files landed
+      - name: "Debug: list repo root"
         run: |
-          echo "Workspace:"
-          pwd
-          ls -la
-          echo
-          echo "./site contents:"
-          ls -la ./site
+          echo "Workspace: $GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE"
+      - name: "Debug: list ./site"
+        run: |
+          ls -la "$GITHUB_WORKSPACE/site" || echo "No site at repo root"
+      - name: "Debug: list ansible/site (fallback)"
+        run: |
+          ls -la "$GITHUB_WORKSPACE/ansible/site" || echo "No site under ansible/"
 
       # Prepare to publish to GitHub Pages
       - name: Setup Pages

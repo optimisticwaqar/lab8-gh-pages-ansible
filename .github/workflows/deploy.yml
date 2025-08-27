@@ -34,7 +34,7 @@ jobs:
             -vv
 
       # Sanity check so we fail fast with a clear message if ./site isn't there
-      - name: Debug: list site directory
+      - name: "Debug: list site directory"
         run: |
           echo "Workspace:"
           pwd

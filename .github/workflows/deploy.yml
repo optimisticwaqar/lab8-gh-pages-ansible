@@ -24,14 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Dummy step: securely load SSH key (not used here)
-      - name: Load SSH key from secret
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-        shell: bash
-
+      # Run Ansible locally on the runner (no SSH needed)
       - name: Build site with Ansible (local)
         uses: dawidd6/action-ansible-playbook@v2
         with:
@@ -39,18 +32,29 @@ jobs:
           inventory: ansible/inventory.ini
           options: |
             -vv
-        env:
-          SITE_DIR: ./site
 
+      # Sanity check so we fail fast with a clear message if ./site isn't there
+      - name: Debug: list site directory
+        run: |
+          echo "Workspace:"
+          pwd
+          ls -la
+          echo
+          echo "./site contents:"
+          ls -la ./site
+
+      # Prepare to publish to GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # Upload the ./site folder produced by Ansible
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
 
   deploy:
+    # Publish to GitHub Pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

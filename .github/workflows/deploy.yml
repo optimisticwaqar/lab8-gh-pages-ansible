@@ -35,7 +35,7 @@ jobs:
           SITE_DIR: ${{ github.workspace }}/site
         run: |
           ansible --version
-          ansible-playbook -i ansible/inventory.ini ansible/site.yml -vv
+          ansible-playbook -i ansible/inventory.ini ansible/site.yml -vvv
 
       # Confirm site exists at the expected location
       - name: "Debug: list repo root"

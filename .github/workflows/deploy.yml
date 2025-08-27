@@ -24,42 +24,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Run Ansible locally on the runner (no SSH needed)
-      - name: Build site with Ansible (local)
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: ansible/site.yml
-          inventory: ansible/inventory.ini
-          options: |
-            -vv
-        env:
-          # Absolute path ensures the site is created at repo root
-          SITE_DIR: ${{ github.workspace }}/site
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
 
-      # Sanity checks so we can see where files landed
+      # Run ansible-playbook directly; write to repo-root/site (absolute path)
+      - name: Build site with Ansible (local)
+        env:
+          SITE_DIR: ${{ github.workspace }}/site
+        run: |
+          ansible --version
+          ansible-playbook -i ansible/inventory.ini ansible/site.yml -vv
+
+      # Confirm site exists at the expected location
       - name: "Debug: list repo root"
         run: |
           echo "Workspace: $GITHUB_WORKSPACE"
           ls -la "$GITHUB_WORKSPACE"
       - name: "Debug: list ./site"
         run: |
-          ls -la "$GITHUB_WORKSPACE/site" || echo "No site at repo root"
-      - name: "Debug: list ansible/site (fallback)"
-        run: |
-          ls -la "$GITHUB_WORKSPACE/ansible/site" || echo "No site under ansible/"
+          ls -la "$GITHUB_WORKSPACE/site"
 
-      # Prepare to publish to GitHub Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # Upload the ./site folder produced by Ansible
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
 
   deploy:
-    # Publish to GitHub Pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
